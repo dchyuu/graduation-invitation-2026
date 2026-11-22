@@ -1,13 +1,12 @@
 'use strict';
-/* Chỉ cần sửa các giá trị trong CONFIG. Giữ Supabase trống cho bản demo. */
+/* Cấu hình thiệp và địa chỉ nhận lời chúc riêng. */
 const CONFIG = Object.freeze({
   name: 'Trần Duy Đức Huy',
   eventStart: '2026-11-29T10:00:00+07:00',
   eventEnd: '2026-11-29T11:00:00+07:00',
   address: 'Sảnh Hội trường A5, Trường Đại học Bách khoa – ĐHQG TP.HCM, 268 Lý Thường Kiệt, phường Diên Hồng, TP.HCM',
   mapUrl: 'https://maps.app.goo.gl/B5QTQUGW13hpyXqp9',
-  supabaseUrl: '', // Ví dụ: 'https://abcdefgh.supabase.co'
-  supabaseAnonKey: '' // Public anon/publishable key, KHÔNG dùng service_role key.
+  guestbookUrl: "https://script.google.com/macros/s/AKfycbyV-aoNx54d7mbzarvZNUul9ltxzOsht4pr0FhK3miIX31cmR-RtbyBmfRpA8-GP6YrUQ/exec"
 });
 const $ = selector => document.querySelector(selector);
 const $$ = selector => [...document.querySelectorAll(selector)];
@@ -35,14 +34,14 @@ $('#shareBtn').addEventListener('click',async()=>{if(location.protocol==='file:'
 // Animation: tôn trọng người dùng chọn giảm chuyển động.
 if(!window.matchMedia('(prefers-reduced-motion: reduce)').matches && 'IntersectionObserver' in window){const observer=new IntersectionObserver(entries=>entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('visible');observer.unobserve(e.target)}}),{threshold:.08,rootMargin:'0px 0px 30px 0px'});$$('.reveal').forEach(el=>observer.observe(el));}else{$$('.reveal').forEach(el=>el.classList.add('visible'))}
 // Lời chúc chỉ được gửi vào hộp thư riêng của chủ dự án.
-const online = Boolean(CONFIG.supabaseUrl && CONFIG.supabaseAnonKey);
+const online = Boolean(CONFIG.guestbookUrl);
 const form = $('#wishForm');
 const submitBtn = $('#submitWish');
 const chars = $('#charsLeft');
 const explainer = $('#wishExplainer');
 $('#guestbookMode').textContent = online ? 'GỬI RIÊNG' : 'CHƯA MỞ';
 explainer.textContent = online
-  ? 'Lời chúc được gửi riêng cho Huy. Chỉ Huy có thể xem trong trang quản trị.'
+  ? 'Lời chúc được gửi riêng cho Huy. Huy sẽ đọc trong bảng lời chúc riêng.'
   : 'Hộp thư lời chúc đang được chuẩn bị. Bạn vui lòng quay lại sau nhé.';
 submitBtn.disabled = !online;
 $('#wishName').disabled = !online;
@@ -62,17 +61,15 @@ form.addEventListener('submit', async event => {
   submitBtn.disabled = true;
   submitBtn.textContent = 'Đang gửi...';
   try {
-    const response = await fetch(CONFIG.supabaseUrl.replace(/\/$/, '') + '/rest/v1/guestbook_messages', {
+    const response = await fetch(CONFIG.guestbookUrl, {
       method: 'POST',
-      headers: {
-        apikey: CONFIG.supabaseAnonKey,
-        Authorization: 'Bearer ' + CONFIG.supabaseAnonKey,
-        'Content-Type': 'application/json',
-        Prefer: 'return=minimal'
-      },
-      body: JSON.stringify({ name, message, status: 'pending' })
+      credentials: 'omit',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ name, message })
     });
-    if (!response.ok) throw new Error('Gửi chưa thành công');
+    if (!response.ok) throw new Error("Gửi chưa thành công");
+    const result = await response.json();
+    if (result.ok !== true) throw new Error("Chưa lưu được lời chúc");
     form.reset();
     chars.textContent = '0 / 350 ký tự';
     explainer.textContent = 'Đã gửi lời chúc riêng cho Huy. Cảm ơn bạn nhé!';
