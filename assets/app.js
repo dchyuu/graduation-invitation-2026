@@ -32,15 +32,6 @@ const icsText=['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//Huy Graduation//Person
 $('#downloadIcs').addEventListener('click',()=>{const blob=new Blob([icsText],{type:'text/calendar;charset=utf-8'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='hen-chup-anh-tot-nghiep-Huy-29-11-2026.ics';document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),2000);toast('Đã tạo tệp lịch 10:00–11:00 ngày 29/11/2026.');});
 $('#copyAddress').addEventListener('click',async()=>toast((await copy(CONFIG.address))?'Đã sao chép địa chỉ gặp Huy!':'Không sao chép được. Bạn có thể mở Bản đồ Google.'));
 $('#shareBtn').addEventListener('click',async()=>{if(location.protocol==='file:'){toast('Hãy mở thiệp mời trực tuyến để chia sẻ đường dẫn.');return}const data={title:'Thiệp mời tốt nghiệp của Trần Duy Đức Huy',text:'Mình mời bạn đến chung vui và chụp ảnh tốt nghiệp ngày 29/11/2026, 10:00–11:00 tại sảnh A5 🎓',url:location.href};if(navigator.share){try{await navigator.share(data);return}catch(e){if(e.name==='AbortError')return}}toast(await copy(location.href)?'Đã sao chép đường dẫn thiệp mời!':'Không thể sao chép tự động. Hãy sao chép đường dẫn trên trình duyệt.');});
-// Hiển thị ảnh chân dung khi đã có tệp.
-const portrait = $('#portraitImage');
-portrait.addEventListener('load', () => {
-  portrait.style.display = 'block';
-  $('#portraitFallback').hidden = true;
-});
-portrait.addEventListener('error', () => portrait.removeAttribute('src'));
-portrait.src = portrait.dataset.src;
-
 // Animation: tôn trọng người dùng chọn giảm chuyển động.
 if(!window.matchMedia('(prefers-reduced-motion: reduce)').matches && 'IntersectionObserver' in window){const observer=new IntersectionObserver(entries=>entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('visible');observer.unobserve(e.target)}}),{threshold:.08,rootMargin:'0px 0px 30px 0px'});$$('.reveal').forEach(el=>observer.observe(el));}else{$$('.reveal').forEach(el=>el.classList.add('visible'))}
 // Guestbook: nếu cấu hình Supabase -> chia sẻ lời chúc được duyệt giữa các thiết bị.
