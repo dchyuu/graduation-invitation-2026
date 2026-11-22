@@ -37,7 +37,6 @@ if(!window.matchMedia('(prefers-reduced-motion: reduce)').matches && 'Intersecti
 const online = Boolean(CONFIG.guestbookUrl);
 const form = $('#wishForm');
 const submitBtn = $('#submitWish');
-const chars = $('#charsLeft');
 const explainer = $('#wishExplainer');
 $('#guestbookMode').textContent = online ? 'GỬI RIÊNG' : 'CHƯA MỞ';
 explainer.textContent = online
@@ -46,15 +45,12 @@ explainer.textContent = online
 submitBtn.disabled = !online;
 $('#wishName').disabled = !online;
 $('#wishText').disabled = !online;
-$('#wishText').addEventListener('input', () => {
-  chars.textContent = $('#wishText').value.length + ' / 350 ký tự';
-});
 form.addEventListener('submit', async event => {
   event.preventDefault();
   if (!online || submitBtn.disabled || !form.reportValidity()) return;
   const name = $('#wishName').value.trim().replace(/\s+/g, ' ');
   const message = $('#wishText').value.trim();
-  if (name.length < 2 || name.length > 45 || message.length < 2 || message.length > 350) {
+  if (name.length < 2 || name.length > 45 || message.length < 2) {
     toast('Vui lòng nhập tên và lời chúc hợp lệ.');
     return;
   }
@@ -71,7 +67,6 @@ form.addEventListener('submit', async event => {
     const result = await response.json();
     if (result.ok !== true) throw new Error("Chưa lưu được lời chúc");
     form.reset();
-    chars.textContent = '0 / 350 ký tự';
     explainer.textContent = 'Đã gửi lời chúc riêng cho Huy. Cảm ơn bạn nhé!';
     toast('Đã gửi lời chúc riêng cho Huy!');
   } catch {
