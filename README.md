@@ -14,22 +14,9 @@
 
 Mở `index.html` bằng Chrome hoặc Edge. Bạn không cần cài đặt bất kỳ thư viện nào.
 
-## 3. Ảnh cần bổ sung
+## 3. Ảnh chân dung
 
-Đặt các ảnh vào **`assets/photos/`** với đúng tên dưới đây (ảnh JPG):
-
-| File | Công dụng | Gợi ý |
-| --- | --- | --- |
-| `portrait.jpg` | Ảnh lớn ở màn hình chào | Ảnh một mình mặc áo tốt nghiệp, tỷ lệ dọc 4:5, độ phân giải tối thiểu 1200×1500 |
-| `gallery-1.jpg` | Ảnh kỷ niệm lớn | Ảnh thời sinh viên/nhóm bạn, ưu tiên 4:5 |
-| `gallery-2.jpg` | Ô ảnh số 2 | Ảnh bạn bè/campus, 4:3 hoặc 1:1 |
-| `gallery-3.jpg` | Ô ảnh số 3 | Ảnh học nhóm/làm đồ án |
-| `gallery-4.jpg` | Ô ảnh số 4 | Ảnh hoạt động/đi chơi |
-| `gallery-5.jpg` | Ô ảnh số 5 | Ảnh đáng nhớ khác |
-
-**Không cần đủ 6 ảnh mới xem được website**. Trang hiện dùng placeholder để không hiển thị ảnh lỗi. Bạn có thể gửi ảnh vào ChatGPT để mình gắn ảnh, crop tối ưu và cập nhật bản cuối.
-
-Mẹo: không dùng ảnh 20–30MB mỗi tấm; có thể nén xuống khoảng 250KB–900KB để web load nhanh trên 4G. Đặt ảnh có rõ chủ thể và kiểm tra xin phép khi dùng ảnh của bạn bè.
+Đặt ảnh chân dung tốt nghiệp tại `assets/photos/portrait.jpg`. Trang dùng hình minh họa khi chưa có ảnh.
 
 ## 4. Các tính năng đang chạy
 
@@ -39,7 +26,6 @@ Mẹo: không dùng ảnh 20–30MB mỗi tấm; có thể nén xuống khoảng
 - Lịch trình buổi sáng **07:00–10:00** và khung gặp cá nhân **10:00–11:00** riêng biệt.
 - Tải file lịch `.ics` cho cuộc hẹn **10:00–11:00**, hoặc mở Google Calendar.
 - Google Maps dùng link do bạn gửi, bản đồ nhúng khu vực 268 Lý Thường Kiệt.
-- Album với 5 vị trí ảnh, nhấn ảnh để xem phóng to.
 - Nút chia sẻ sau khi website được đưa lên URL công khai.
 - Sổ lưu bút có biểu mẫu, giới hạn ký tự, và chế độ xem thử bằng localStorage trên chính thiết bị đó.
 - Không có RSVP.

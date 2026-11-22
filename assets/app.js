@@ -29,21 +29,18 @@ function refreshCountdown(){
 refreshCountdown();setInterval(refreshCountdown,1000);
 // Lịch .ics đồng bộ 10:00-11:00 ngày 29/11/2026 giờ VN; đổi sang UTC 03:00-04:00.
 const icsText=['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//Huy Graduation//Personal Invitation//VI','CALSCALE:GREGORIAN','METHOD:PUBLISH','BEGIN:VEVENT','UID:huy-graduation-meetup-20261129@personal-invitation','DTSTAMP:20261122T000000Z','DTSTART:20261129T030000Z','DTEND:20261129T040000Z','SUMMARY:Chụp ảnh tốt nghiệp cùng Trần Duy Đức Huy',`LOCATION:${CONFIG.address.replaceAll(",", "\\,")}`,'DESCRIPTION:Hẹn gặp Huy để chụp ảnh ở sảnh A5, cơ sở Lý Thường Kiệt. Đây là giờ hẹn cá nhân sau lễ buổi sáng.','END:VEVENT','END:VCALENDAR'].join('\r\n');
-$('#downloadIcs').addEventListener('click',()=>{const blob=new Blob([icsText],{type:'text/calendar;charset=utf-8'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='hen-chup-anh-tot-nghiep-Huy-29-11-2026.ics';document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),2000);toast('Đã tạo file lịch 10:00–11:00 ngày 29/11/2026.');});
-$('#copyAddress').addEventListener('click',async()=>toast((await copy(CONFIG.address))?'Đã sao chép địa chỉ gặp Huy!':'Không sao chép được. Bạn có thể mở Google Maps.'));
-$('#shareBtn').addEventListener('click',async()=>{if(location.protocol==='file:'){toast('Hãy xuất bản website lên Netlify hoặc GitHub Pages trước khi chia sẻ link nhé.');return}const data={title:'Graduation of Trần Duy Đức Huy',text:'Mình mời bạn đến chung vui và chụp ảnh tốt nghiệp ngày 29/11/2026, 10:00–11:00 tại sảnh A5 🎓',url:location.href};if(navigator.share){try{await navigator.share(data);return}catch(e){if(e.name==='AbortError')return}}toast(await copy(location.href)?'Đã sao chép đường link thiệp mời!':'Không thể sao chép tự động. Hãy sao chép link trên trình duyệt.');});
-// Ảnh: không hiện icon ảnh lỗi; giữ placeholder cho đến khi người dùng thêm file.
-const allPhotos=[];
-$$('img[data-src]').forEach(img=>{
-  const src=img.dataset.src;
-  img.onload=()=>{img.style.display='block';const fallback=img.parentElement.querySelector('.gallery-fallback');if(fallback)fallback.style.display='none';if(img.id==='portraitImage'){$('#portraitFallback').style.display='none'}const tile=img.closest('.gallery-tile');if(tile){tile.classList.add('has-image');allPhotos.push({src,title:tile.querySelector('.gallery-caption')?.textContent||'Ảnh kỷ niệm'});}updateGalleryNotice();};
-  img.onerror=()=>{img.removeAttribute('src');updateGalleryNotice()};img.src=src;
+$('#downloadIcs').addEventListener('click',()=>{const blob=new Blob([icsText],{type:'text/calendar;charset=utf-8'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='hen-chup-anh-tot-nghiep-Huy-29-11-2026.ics';document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),2000);toast('Đã tạo tệp lịch 10:00–11:00 ngày 29/11/2026.');});
+$('#copyAddress').addEventListener('click',async()=>toast((await copy(CONFIG.address))?'Đã sao chép địa chỉ gặp Huy!':'Không sao chép được. Bạn có thể mở Bản đồ Google.'));
+$('#shareBtn').addEventListener('click',async()=>{if(location.protocol==='file:'){toast('Hãy mở thiệp mời trực tuyến để chia sẻ đường dẫn.');return}const data={title:'Thiệp mời tốt nghiệp của Trần Duy Đức Huy',text:'Mình mời bạn đến chung vui và chụp ảnh tốt nghiệp ngày 29/11/2026, 10:00–11:00 tại sảnh A5 🎓',url:location.href};if(navigator.share){try{await navigator.share(data);return}catch(e){if(e.name==='AbortError')return}}toast(await copy(location.href)?'Đã sao chép đường dẫn thiệp mời!':'Không thể sao chép tự động. Hãy sao chép đường dẫn trên trình duyệt.');});
+// Hiển thị ảnh chân dung khi đã có tệp.
+const portrait = $('#portraitImage');
+portrait.addEventListener('load', () => {
+  portrait.style.display = 'block';
+  $('#portraitFallback').hidden = true;
 });
-function updateGalleryNotice(){if($$('.gallery-tile.has-image').length===$$('.gallery-tile').length){$('#galleryNotice').hidden=true}}
-const lightbox=$('#lightbox');$$('.gallery-tile').forEach(tile=>tile.addEventListener('click',()=>{
-  const img=tile.querySelector('img');if(!tile.classList.contains('has-image')){toast('Ảnh này chưa được bổ sung. Vui lòng xem lại sau nhé!');return}
-  $('#lightboxImg').src=img.src;$('#lightboxLabel').textContent=img.alt;lightbox.showModal();
-}));$('#closeLightbox').addEventListener('click',()=>lightbox.close());lightbox.addEventListener('click',e=>{if(e.target===lightbox)lightbox.close()});
+portrait.addEventListener('error', () => portrait.removeAttribute('src'));
+portrait.src = portrait.dataset.src;
+
 // Animation: tôn trọng người dùng chọn giảm chuyển động.
 if(!window.matchMedia('(prefers-reduced-motion: reduce)').matches && 'IntersectionObserver' in window){const observer=new IntersectionObserver(entries=>entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('visible');observer.unobserve(e.target)}}),{threshold:.08,rootMargin:'0px 0px 30px 0px'});$$('.reveal').forEach(el=>observer.observe(el));}else{$$('.reveal').forEach(el=>el.classList.add('visible'))}
 // Guestbook: nếu cấu hình Supabase -> chia sẻ lời chúc được duyệt giữa các thiết bị.
@@ -69,7 +66,7 @@ form.addEventListener('submit',async e=>{
   submitBtn.disabled=true;submitBtn.textContent='Đang gửi...';
   try{
     if(online){const url=`${CONFIG.supabaseUrl.replace(/\/$/,'')}/rest/v1/guestbook_messages`;const res=await fetch(url,{method:'POST',headers:{apikey:CONFIG.supabaseAnonKey,Authorization:`Bearer ${CONFIG.supabaseAnonKey}`,'Content-Type':'application/json',Prefer:'return=minimal'},body:JSON.stringify({name,message,status:'pending'})});if(!res.ok)throw Error('HTTP '+res.status);toast('Đã nhận lời chúc! Nội dung sẽ hiện sau khi được duyệt.');await readOnlineWishes()}
-    else{const item={name,message,created_at:new Date().toISOString()};const all=[item,...localMessages()].slice(0,100);localStorage.setItem(localKey,JSON.stringify(all));renderWishes(all);toast('Đã lưu lời chúc trên thiết bị này (bản demo, chưa chia sẻ công khai).')}
+    else{const item={name,message,created_at:new Date().toISOString()};const all=[item,...localMessages()].slice(0,100);localStorage.setItem(localKey,JSON.stringify(all));renderWishes(all);toast('Đã lưu lời chúc trên thiết bị này (bản xem thử, chưa chia sẻ công khai).')}
     form.reset();chars.textContent='0 / 350 ký tự';
   }catch{toast(online?'Gửi lời chúc chưa thành công. Vui lòng thử lại.':'Không thể lưu trên trình duyệt này.');}
   finally{submitBtn.disabled=false;submitBtn.textContent='Gửi lời chúc ♡'}
