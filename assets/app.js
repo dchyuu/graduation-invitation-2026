@@ -34,35 +34,57 @@ $('#copyAddress').addEventListener('click',async()=>toast((await copy(CONFIG.add
 $('#shareBtn').addEventListener('click',async()=>{if(location.protocol==='file:'){toast('Hãy mở thiệp mời trực tuyến để chia sẻ đường dẫn.');return}const data={title:'Thiệp mời tốt nghiệp của Trần Duy Đức Huy',text:'Mình mời bạn đến chung vui và chụp ảnh tốt nghiệp ngày 29/11/2026, 10:00–11:00 tại sảnh A5 🎓',url:location.href};if(navigator.share){try{await navigator.share(data);return}catch(e){if(e.name==='AbortError')return}}toast(await copy(location.href)?'Đã sao chép đường dẫn thiệp mời!':'Không thể sao chép tự động. Hãy sao chép đường dẫn trên trình duyệt.');});
 // Animation: tôn trọng người dùng chọn giảm chuyển động.
 if(!window.matchMedia('(prefers-reduced-motion: reduce)').matches && 'IntersectionObserver' in window){const observer=new IntersectionObserver(entries=>entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('visible');observer.unobserve(e.target)}}),{threshold:.08,rootMargin:'0px 0px 30px 0px'});$$('.reveal').forEach(el=>observer.observe(el));}else{$$('.reveal').forEach(el=>el.classList.add('visible'))}
-// Guestbook: nếu cấu hình Supabase -> chia sẻ lời chúc được duyệt giữa các thiết bị.
-// Nếu chưa cấu hình -> localStorage demo CHỈ trong trình duyệt hiện tại, có cảnh báo rõ.
-const online=Boolean(CONFIG.supabaseUrl && CONFIG.supabaseAnonKey);
-const localKey='huy-graduation-guestbook-preview-v2';
-const msgList=$('#wishList'),form=$('#wishForm'),submitBtn=$('#submitWish');
-if(online){$('#guestbookMode').textContent='CÓ KIỂM DUYỆT';$('#guestbookMode').classList.add('online');$('#wishExplainer').textContent='Lời chúc sẽ được gửi đi và hiển thị công khai sau khi Huy duyệt nội dung.';$('#wishExplainer').classList.add('online')}
-const chars=$('#charsLeft');$('#wishText').addEventListener('input',()=>chars.textContent=`${$('#wishText').value.length} / 350 ký tự`);
-function localMessages(){try{const data=JSON.parse(localStorage.getItem(localKey)||'[]');return Array.isArray(data)?data:[]}catch{return []}}
-function renderWishes(messages){msgList.replaceChildren();$('#wishCount').textContent=messages.length+' lời chúc';if(!messages.length){const p=document.createElement('p');p.className='no-wishes';p.textContent=online?'Chưa có lời chúc được duyệt. Hãy gửi lời chúc đầu tiên nhé!':'Chưa có lời chúc nào trên thiết bị này. Hãy để lại lời chúc đầu tiên nhé!';msgList.append(p);return}
-  messages.forEach(item=>{const article=document.createElement('article');article.className='wish-card';const name=document.createElement('strong');name.textContent=item.name;const date=document.createElement('time');const parsed=new Date(item.created_at);date.textContent=isNaN(parsed.getTime())?'':parsed.toLocaleDateString('vi-VN',{timeZone:'Asia/Ho_Chi_Minh',day:'2-digit',month:'2-digit',year:'numeric'});const message=document.createElement('p');message.textContent=item.message;article.append(name,date,message);msgList.append(article)});
-}
-async function readOnlineWishes(){
-  try{const url=`${CONFIG.supabaseUrl.replace(/\/$/,'')}/rest/v1/guestbook_messages?select=name,message,created_at&status=eq.approved&order=created_at.desc&limit=100`;const res=await fetch(url,{headers:{apikey:CONFIG.supabaseAnonKey,Authorization:`Bearer ${CONFIG.supabaseAnonKey}`}});if(!res.ok)throw Error('status '+res.status);renderWishes(await res.json());}
-  catch{renderWishes([]);toast('Không tải được lời chúc. Vui lòng thử lại.');}
-}
-if(online)readOnlineWishes();else renderWishes(localMessages());
-form.addEventListener('submit',async e=>{
-  e.preventDefault();if(!form.reportValidity())return;
-  const name=$('#wishName').value.trim().replace(/\s+/g,' '),message=$('#wishText').value.trim();
-  if(name.length<2 || name.length>45 || message.length<2 || message.length>350){toast('Vui lòng nhập tên và lời chúc hợp lệ.');return}
-  submitBtn.disabled=true;submitBtn.textContent='Đang gửi...';
-  try{
-    if(online){const url=`${CONFIG.supabaseUrl.replace(/\/$/,'')}/rest/v1/guestbook_messages`;const res=await fetch(url,{method:'POST',headers:{apikey:CONFIG.supabaseAnonKey,Authorization:`Bearer ${CONFIG.supabaseAnonKey}`,'Content-Type':'application/json',Prefer:'return=minimal'},body:JSON.stringify({name,message,status:'pending'})});if(!res.ok)throw Error('HTTP '+res.status);toast('Đã nhận lời chúc! Nội dung sẽ hiện sau khi được duyệt.');await readOnlineWishes()}
-    else{const item={name,message,created_at:new Date().toISOString()};const all=[item,...localMessages()].slice(0,100);localStorage.setItem(localKey,JSON.stringify(all));renderWishes(all);toast('Đã lưu lời chúc trên thiết bị này (bản xem thử, chưa chia sẻ công khai).')}
-    form.reset();chars.textContent='0 / 350 ký tự';
-  }catch{toast(online?'Gửi lời chúc chưa thành công. Vui lòng thử lại.':'Không thể lưu trên trình duyệt này.');}
-  finally{submitBtn.disabled=false;submitBtn.textContent='Gửi lời chúc ♡'}
+// Lời chúc chỉ được gửi vào hộp thư riêng của chủ dự án.
+const online = Boolean(CONFIG.supabaseUrl && CONFIG.supabaseAnonKey);
+const form = $('#wishForm');
+const submitBtn = $('#submitWish');
+const chars = $('#charsLeft');
+const explainer = $('#wishExplainer');
+$('#guestbookMode').textContent = online ? 'GỬI RIÊNG' : 'CHƯA MỞ';
+explainer.textContent = online
+  ? 'Lời chúc được gửi riêng cho Huy. Chỉ Huy có thể xem trong trang quản trị.'
+  : 'Hộp thư lời chúc đang được chuẩn bị. Bạn vui lòng quay lại sau nhé.';
+submitBtn.disabled = !online;
+$('#wishName').disabled = !online;
+$('#wishText').disabled = !online;
+$('#wishText').addEventListener('input', () => {
+  chars.textContent = $('#wishText').value.length + ' / 350 ký tự';
 });
-
+form.addEventListener('submit', async event => {
+  event.preventDefault();
+  if (!online || submitBtn.disabled || !form.reportValidity()) return;
+  const name = $('#wishName').value.trim().replace(/\s+/g, ' ');
+  const message = $('#wishText').value.trim();
+  if (name.length < 2 || name.length > 45 || message.length < 2 || message.length > 350) {
+    toast('Vui lòng nhập tên và lời chúc hợp lệ.');
+    return;
+  }
+  submitBtn.disabled = true;
+  submitBtn.textContent = 'Đang gửi...';
+  try {
+    const response = await fetch(CONFIG.supabaseUrl.replace(/\/$/, '') + '/rest/v1/guestbook_messages', {
+      method: 'POST',
+      headers: {
+        apikey: CONFIG.supabaseAnonKey,
+        Authorization: 'Bearer ' + CONFIG.supabaseAnonKey,
+        'Content-Type': 'application/json',
+        Prefer: 'return=minimal'
+      },
+      body: JSON.stringify({ name, message, status: 'pending' })
+    });
+    if (!response.ok) throw new Error('Gửi chưa thành công');
+    form.reset();
+    chars.textContent = '0 / 350 ký tự';
+    explainer.textContent = 'Đã gửi lời chúc riêng cho Huy. Cảm ơn bạn nhé!';
+    toast('Đã gửi lời chúc riêng cho Huy!');
+  } catch {
+    explainer.textContent = 'Chưa gửi được lời chúc. Nội dung vẫn còn trong biểu mẫu để bạn thử lại.';
+    toast('Gửi chưa thành công. Vui lòng thử lại.');
+  } finally {
+    submitBtn.disabled = false;
+    submitBtn.textContent = 'Gửi lời chúc ♡';
+  }
+});
 
 // Sơ đồ trường phóng to (ảnh do Huy cung cấp).
 const campusMapDialog=$('#campusMapDialog');

@@ -27,23 +27,18 @@ Mở `index.html` bằng Chrome hoặc Edge. Bạn không cần cài đặt bấ
 - Tải file lịch `.ics` cho cuộc hẹn **10:00–11:00**, hoặc mở Google Calendar.
 - Google Maps dùng link do bạn gửi, bản đồ nhúng khu vực 268 Lý Thường Kiệt.
 - Nút chia sẻ sau khi website được đưa lên URL công khai.
-- Sổ lưu bút có biểu mẫu, giới hạn ký tự, và chế độ xem thử bằng localStorage trên chính thiết bị đó.
+- Hộp thư lời chúc riêng, giới hạn ký tự. Cần cấu hình Supabase để nhận lời chúc.
 - Không có RSVP.
 
-## 5. Quan trọng: làm sổ lưu bút hiển thị cho mọi người
+## 5. Hộp thư lời chúc riêng
 
-**Mặc định, các lời chúc chỉ lưu trong trình duyệt của người gửi. Người khác sẽ không thấy.** Đây là chế độ demo, có nhãn cảnh báo trên website. Để khách gửi lời chúc và Huy có thể duyệt rồi công khai:
+Website chỉ gửi lời chúc. Chủ dự án xem trong Supabase Dashboard, tại Table Editor → guestbook_messages.
 
-1. Tạo một **Supabase** project miễn phí tại https://supabase.com/.
-2. Vào **SQL Editor**, chạy toàn bộ nội dung file `guestbook-supabase.sql` đi kèm.
-3. Vào **Project Settings → API Keys** để lấy **publishable/anon key**, và **Project URL**.
-4. Mở `assets/app.js`, tìm `CONFIG` ở đầu file, điền `supabaseUrl` và `supabaseAnonKey`. **Không bao giờ đưa service_role/secret key vào trình duyệt!**
-5. Mở website và gửi một lời chúc thử. Trong Supabase **Table Editor → guestbook_messages**, bạn sẽ thấy dòng mới có `status = pending`.
-6. Kiểm tra nội dung, đổi `status` thành `approved` để hiện cho tất cả khách. Có thể dùng `rejected` để ẩn.
+1. Tạo dự án Supabase và chạy toàn bộ guestbook-supabase.sql. Với dự án đã dùng bản SQL cũ, chạy lại bản mới để gỡ quyền đọc công khai.
+2. Điền Project URL và khóa anon/publishable vào CONFIG trong assets/app.js. Giữ khóa service_role và mật khẩu trong trang quản trị.
+3. Triển khai lại website. Thử gửi lời chúc và xác nhận bản ghi trong Dashboard. Kiểm tra API với khóa anon không thể đọc bảng.
 
-Khi kết nối thành công, website sẽ tự hiện **CÓ KIỂM DUYỆT** thay cho **BẢN XEM THỬ**. Chỉ lời chúc đã duyệt được đọc công khai. Nếu gặp spam, thiết lập rate limiting hoặc CAPTCHA ở lớp API/trang web trước khi chia sẻ rộng.
-
-Nếu **không muốn dùng database** bạn vẫn có thể dùng web trước buổi lễ, nhưng nên coi sổ lưu bút là bản demo chứ không phải hệ thống nhận lời chúc chung.
+Khi chưa cấu hình, biểu mẫu hiển thị Chưa mở và khóa nút gửi. Không lưu lời chúc mới vào trình duyệt. Dữ liệu xem thử cũ vẫn nằm trong trình duyệt từng người gửi.
 
 ## 6. Đăng website cho mọi người xem
 
@@ -79,26 +74,9 @@ Chương trình lễ tóm tắt trong website được biên tập từ **ảnh 
 - **Logo BK TP.HCM được sử dụng đúng theo ảnh Trần Duy Đức Huy cung cấp**: lưu cục bộ tại `assets/logo-bk-tphcm.png`, gắn ở đầu trang, chân trang và làm favicon. Ảnh không phụ thuộc vào máy chủ ngoài.
 - Logo và tên HCMUT chỉ dùng để giới thiệu ngữ cảnh thiệp mời cá nhân; trang web không phải đại diện trường.
 
-## 10. Xem lại và xuất lời chúc sau ngày lễ
+## 10. Xem và xuất lời chúc
 
-### Chế độ hiện tại (chưa thiết lập Supabase)
-Lời chúc lưu trong `localStorage` của trình duyệt **người nhập**, theo key `huy-graduation-guestbook-preview-v2`. Huy không thể xem tập trung lời chúc của khách ở thiết bị khác. Các lời chúc có thể mất khi xóa dữ liệu website, đổi trình duyệt, hoặc xóa bộ nhớ. **Không dùng chế độ này làm sổ lưu bút chính thức.**
-
-### Chế độ trực tuyến (Supabase)
-- Khách gửi lời chúc → Supabase bảng `public.guestbook_messages` với `status='pending'`.
-- Chủ website mở **Supabase Dashboard → Table Editor → public → guestbook_messages** để xem mọi lời chúc và ngày giờ gửi, kể cả chưa duyệt.
-- Chuyển `status` thành `approved` để nội dung xuất hiện công khai. `rejected` để ẩn.
-- Trong Table Editor có thể dùng chức năng Export CSV để tải dữ liệu dự phòng. Chỉ người có quyền truy cập dự án Supabase được xem tất cả lời chúc.
-- Mẫu SQL xem mọi lời chúc trong SQL Editor:
-
-```sql
-select id, name, message, status,
-       created_at at time zone 'Asia/Ho_Chi_Minh' as time_vietnam
-from public.guestbook_messages
-order by created_at desc;
-```
-
-**Không đăng URL quản trị, mật khẩu hoặc `service_role`/`secret` key trong repo GitHub.** `anon/publishable` key chỉ dùng với Supabase Row Level Security như script SQL đính kèm. Nên bổ sung CAPTCHA/rate limiting trước khi chia sẻ rộng vì form cho người dùng ẩn danh có thể bị spam.
+Đăng nhập Supabase Dashboard để xem bảng guestbook_messages hoặc xuất CSV. Các trạng thái cũ được giữ để tương thích dữ liệu. Website không đọc hay hiển thị lời chúc.
 
 ## 11. Xuất bản lên GitHub Pages
 
